@@ -89,21 +89,26 @@ class RaspberryPiWifiManager(WifiManagerInterface):
                 shutil.copy(backup_conf_path, wpa_supplicant_conf_path)
                 os.system('wpa_cli -i wlan0 reconfigure')
                 return False
+        except Exception as e:
+            print(e)
         finally:
             if os.path.exists(backup_conf_path):
                 os.remove(backup_conf_path)
+        return False
 
-    def check_wifi_status(self, timeout=10, interval=2):
+    def check_wifi_status(self, timeout=10, interval=1):
         start_time = time.time()
 
         while time.time() - start_time < timeout:
             try:
                 status_output = subprocess.check_output(['wpa_cli', '-i', 'wlan0', 'status'], text=True)
+                print(status_output)
                 if 'wpa_state=COMPLETED' in status_output:
                     return True
                 elif 'wpa_state=DISCONNECTED' in status_output or 'wpa_state=INTERFACE_DISABLED' in status_output:
                     return False
             except subprocess.CalledProcessError:
+                print(subprocess.CalledProcessError)
                 return False
 
             time.sleep(interval)

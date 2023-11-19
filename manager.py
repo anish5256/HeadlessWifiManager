@@ -2,6 +2,7 @@ import platform
 from adaptor.win import WindowsWifiManager
 from adaptor.rpi import RaspberryPiWifiManager
 import os
+import re
 
 class WifiManagerAdapter:
     def __init__(self):
@@ -20,7 +21,12 @@ class WifiManagerAdapter:
             raise NotImplementedError("Unsupported operating system")
 
     def is_raspberry_pi_os(self):
-        return os.path.exists('/etc/raspbian_version') or self.check_other_rpi_os_signs()
+        if os.path.isfile('/etc/os-release'):
+            with open('/etc/os-release', 'r') as f:
+                os_release_content = f.read()
+                # Search for a Raspberry Pi OS identifier in the os-release file
+                return re.search(r'raspbian|raspberrypi', os_release_content, re.I) is not None
+        return False
 
     def get_manager(self):
         return self.wifi_manager

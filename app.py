@@ -26,7 +26,7 @@ def save_credentials():
     ssid = request.form['ssid']
     password = request.form['wifi_key']
     is_connected = wifi_manager.connect_to_wifi(ssid, password)
-    return render_template('save_credentials.html', ssid=ssid, is_connected=is_connected)
+    return render_template('save_credentials.html', ssid=ssid, connection_status=is_connected)
 
 @app.route('/saved_networks')
 def saved_networks():
