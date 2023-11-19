@@ -1,0 +1,38 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+  <div id="mainContent">
+
+<div id="networkStatus">
+  {% if current_network_info %}
+    <p>Connected to: {{ current_network_info.ssid }}</p>
+    <p>Signal Strength: {{ current_network_info.signal_strength }}</p>
+    <!-- Add more details as available and needed -->
+  {% else %}
+    <p>Not connected to any WiFi network</p>
+  {% endif %}
+<br><br>
+</div>
+
+<!-- Rest of your existing template -->
+
+    <form action="{{ url_for('save_credentials') }}" method=post>
+      <ul>
+        <li><label for="ssid">Select your WiFi network</label></li>
+
+        <li class="wifiNetwork">
+          <select id="ssid" name="ssid", class="wifiNetworkInputs">
+            {% for ssid in wifi_ap_array %}
+              <option value='{{ ssid }}'>{{ ssid }}</option>
+            {% endfor %}
+          </select>
+        </li>
+
+        <li><label for="wifi_key">Your Wifi password</label></li>
+        <li><input type="password" name="wifi_key", class="wifiNetworkInputs"></li>
+
+        <input type="submit", class="wifiConnectButton">
+      </ul>
+    </form>
+  </div>
+{% endblock %}
