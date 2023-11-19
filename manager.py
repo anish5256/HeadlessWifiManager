@@ -1,4 +1,6 @@
 import platform
+
+from adaptor.mac import MacOSWifiManager
 from adaptor.win import WindowsWifiManager
 from adaptor.rpi import RaspberryPiWifiManager
 import os
@@ -17,6 +19,8 @@ class WifiManagerAdapter:
                 return RaspberryPiWifiManager()
             else:
                 raise NotImplementedError("Linux OS detected is not Raspberry Pi OS")
+        elif self.os_type == 'Darwin':  # Darwin is the system type for macOS
+            return MacOSWifiManager()
         else:
             raise NotImplementedError("Unsupported operating system")
 
