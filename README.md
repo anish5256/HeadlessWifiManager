@@ -1,8 +1,6 @@
 
-ChatGPT
-Sure, I can help you draft a README file for a GitHub repository named "HeadlessWifiManager" designed for the Raspberry Pi Zero running Raspberry Pi OS. This README will include an introduction, features, setup instructions, and steps to create a service for the application.
-
 HeadlessWifiManager for Raspberry Pi Zero
+
 Introduction
 HeadlessWifiManager is a lightweight, efficient tool designed for Raspberry Pi Zero running on Raspberry Pi OS. It provides an easy and user-friendly way to manage WiFi networks in a headless setup. With this tool, you can scan for available WiFi networks and connect to new ones without needing a graphical interface.
 
