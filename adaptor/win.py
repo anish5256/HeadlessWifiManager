@@ -2,18 +2,55 @@ import subprocess
 import json
 import os
 
-class WindowsWifiManager:
+from adaptor.interface import WifiManagerInterface
+
+class WindowsWifiManager(WifiManagerInterface):
     def __init__(self):
         self.credentials_file = 'wifi_credentials.json'
+        subprocess.check_output("netsh wlan set autoconfig enabled=yes interface=Wi-Fi",
+                                           shell=True).decode('utf-8', 'ignore')
+
+
+    def get_current_network_info(self):
+        """
+        Get information about the currently connected WiFi network on Windows.
+        """
+        try:
+            # Using 'netsh' command to get the details of the current WiFi connection
+            output = subprocess.check_output("netsh wlan show interfaces", shell=True).decode('utf-8', 'ignore')
+            return self.parse_network_info(output)
+        except subprocess.CalledProcessError as e:
+            print(f"Error getting current network info: {e}")
+            return None
+
+    def parse_network_info(self, output):
+        """
+        Parse the output from 'netsh wlan show interfaces' to extract network information.
+        """
+        network_info = {}
+        # Parsing the output to extract information
+        for line in output.split('\n'):
+            if "SSID" in line and "BSSID" not in line:
+                network_info['ssid'] = line.split(':')[1].strip()
+            if "Signal" in line:
+                network_info['signal_strength'] = line.split(':')[1].strip()
+            # You can add more fields as needed
+
+        if not network_info:
+            return {'ssid': 'Not Connected', 'signal_strength': 'Unknown'}
+
+        return network_info
 
     def scan_wifi_networks(self):
         ap_array = []
         try:
-            ap_list = subprocess.check_output("netsh wlan show networks mode=Bssid", shell=True).decode('utf-8', 'ignore')
+            ap_list = subprocess.check_output("netsh wlan show networks", shell=True).decode('utf-8', 'ignore')
+            print(ap_list)
             for line in ap_list.split('\n'):
                 if 'SSID' in line and 'BSSID' not in line:
                     ap_ssid = line.split(': ')[1].strip()
-                    ap_array.append(ap_ssid)
+                    if ap_ssid:
+                        ap_array.append(ap_ssid)
         except subprocess.CalledProcessError as e:
             print(f"Error scanning networks: {e}")
         return ap_array
@@ -66,6 +103,12 @@ class WindowsWifiManager:
     </MSM>
 </WLANProfile>"""
         return profile_xml
+
+    def load_saved_credentials(self):
+        if os.path.exists(self.credentials_file):
+            with open(self.credentials_file, 'r') as file:
+                return json.load(file)
+        return {}
 
     def save_credentials(self, ssid, password):
         if os.path.exists(self.credentials_file):

@@ -22,7 +22,7 @@
 
         <li class="wifiNetwork">
           <select id="ssid" name="ssid", class="wifiNetworkInputs">
-            {% for ssid in wifi_ap_array %}
+            {% for ssid in wifi_networks %}
               <option value='{{ ssid }}'>{{ ssid }}</option>
             {% endfor %}
           </select>

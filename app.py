@@ -13,11 +13,12 @@ def index():
     It shows available Wi-Fi networks and current network information.
     """
     wifi_networks = wifi_manager.scan_wifi_networks()
+    print(wifi_networks)
     current_network_info = wifi_manager.get_current_network_info()
     return render_template('index.html', wifi_networks=wifi_networks, current_network_info=current_network_info)
 
 @app.route('/save_credentials', methods=['POST'])
-def save_credentials_route():
+def save_credentials():
     """
     Route to save Wi-Fi credentials.
     Attempts to connect to the specified Wi-Fi network using provided credentials.
@@ -25,7 +26,7 @@ def save_credentials_route():
     ssid = request.form['ssid']
     password = request.form['wifi_key']
     is_connected = wifi_manager.connect_to_wifi(ssid, password)
-    return render_template('connection_status.html', ssid=ssid, is_connected=is_connected)
+    return render_template('save_credentials.html', ssid=ssid, is_connected=is_connected)
 
 @app.route('/saved_networks')
 def saved_networks():

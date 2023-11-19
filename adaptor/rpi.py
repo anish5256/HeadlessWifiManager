@@ -5,8 +5,10 @@ import shutil
 import subprocess
 import time
 
+from adaptor.interface import WifiManagerInterface
 
-class WifiManager:
+
+class RaspberryPiWifiManager(WifiManagerInterface):
     def __init__(self):
         self.credentials_file = 'wifi_credentials.json'
 
