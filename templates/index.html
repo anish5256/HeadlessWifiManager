@@ -1,38 +1,42 @@
-{% extends 'layout.html' %}
+{% extends 'layout.html' %} {% block body %}
 
-{% block body %}
-  <div id="mainContent">
-
-<div id="networkStatus">
-  {% if current_network_info %}
-    <p>Connected to: {{ current_network_info.ssid }}</p>
-    <p>Signal Strength: {{ current_network_info.signal_strength }}</p>
-    <!-- Add more details as available and needed -->
-  {% else %}
-    <p>Not connected to any WiFi network</p>
-  {% endif %}
-<br><br>
-</div>
-
-<!-- Rest of your existing template -->
-
-    <form action="{{ url_for('save_credentials') }}" method=post>
-      <ul>
-        <li><label for="ssid">Select your WiFi network</label></li>
-
-        <li class="wifiNetwork">
-          <select id="ssid" name="ssid", class="wifiNetworkInputs">
+<div class="content">
+  <div class="subcontent">
+    <div class="left-column">
+      {% if current_network_info and current_network_info.ssid != "Not
+      Connected" %}
+      <p class="small-text">Connected To</p>
+      <p class="large-text">{{ current_network_info.ssid }}</p>
+      <div class="vertical-gap"></div>
+      <p class="small-text">Signal Strength</p>
+      <p class="large-text">{{ current_network_info.signal_strength }}</p>
+      <div class="vertical-gap"></div>
+      <p class="small-text">IP Address</p>
+      <p class="large-text">192.168.0.1</p>
+      <div class="vertical-gap"></div>
+      <p class="small-text">Physical Address</p>
+      <p class="large-text">1c:c1:0c:ba:76:38</p>
+      {% else %}
+      <p class="small-text">Network Info</p>
+      <p class="large-text">Not connected to any WiFi network</p>
+      {% endif %}
+      <img src="{{ url_for('static', filename='images/MetalCloud-HorizontalLogo.png') }}" alt="Description of the image" class="bottom-left-image">
+    </div>
+    <div class="right-column">
+      <h2>Choose Wifi Network</h2>
+      <div class="input-container">
+        <form action="{{ url_for('save_credentials') }}" method="post">
+          <select id="ssid" name="ssid" ,>
             {% for ssid in wifi_networks %}
-              <option value='{{ ssid }}'>{{ ssid }}</option>
+            <option value="{{ ssid }}">{{ ssid }}</option>
             {% endfor %}
           </select>
-        </li>
-
-        <li><label for="wifi_key">Your Wifi password</label></li>
-        <li><input type="password" name="wifi_key", class="wifiNetworkInputs"></li>
-
-        <input type="submit", class="wifiConnectButton">
-      </ul>
-    </form>
+          <input type="password" name="wifi_key" , placeholder="Password" />
+          <button type="submit" ,>Connect</button>
+        </form>
+      </div>
+    </div>
   </div>
+</div>
+
 {% endblock %}
