@@ -29,6 +29,11 @@ class RaspberryPiWifiManager(WifiManagerInterface):
         try:
             iwconfig_output = subprocess.check_output(['iwconfig'], text=True)
             cpuinfo_output = subprocess.check_output(['cat', '/proc/cpuinfo'], text=True)
+            # Try to get tun0 IP address
+            try:
+                tun0_output = subprocess.check_output(['ip', 'addr', 'show', 'tun0'], text=True)
+            except subprocess.CalledProcessError:
+                tun0_output = None
         except subprocess.CalledProcessError as e:
             print(f"Error executing command: {e}")
             return None
@@ -37,22 +42,26 @@ class RaspberryPiWifiManager(WifiManagerInterface):
         quality_regex = re.compile(r'Link Quality=(\d+/\d+)')
         signal_regex = re.compile(r'Signal level=(-?\d+ dBm)')
         serial_regex = re.compile(r'Serial\s+:\s+(\w+)')
+        inet_regex = re.compile(r'inet (\d+\.\d+\.\d+\.\d+)/')
 
         ssid_match = ssid_regex.search(iwconfig_output)
         quality_match = quality_regex.search(iwconfig_output)
         signal_match = signal_regex.search(iwconfig_output)
         serial_match = serial_regex.search(cpuinfo_output)
+        inet_match = inet_regex.search(tun0_output) if tun0_output else None
 
         ssid = ssid_match.group(1) if ssid_match else 'Not Connected'
         quality = quality_match.group(1) if quality_match else 'Unknown'
         signal_strength = signal_match.group(1) if signal_match else 'Unknown'
         serial_number = serial_match.group(1) if serial_match else 'Unknown'
+        inet_address = inet_match.group(1) if inet_match else 'Not Available'
 
         return {
             'ssid': ssid,
             'link_quality': quality,
             'signal_strength': signal_strength,
-            'serial_number': serial_number
+            'serial_number': serial_number,
+            'tun0_ip_address': inet_address
         }
 
     def load_saved_credentials(self):
