@@ -6,6 +6,7 @@ from adaptor.rpi import RaspberryPiWifiManager
 import os
 import re
 
+
 class WifiManagerAdapter:
     def __init__(self):
         self.os_type = platform.system()

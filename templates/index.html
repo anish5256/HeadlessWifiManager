@@ -14,8 +14,18 @@
       <p class="small-text">Serial No</p>
       <p class="large-text">{{ current_network_info.serial_number }}</p>
       <div class="vertical-gap"></div>
-      <p class="small-text">Address</p>
-      <p class="large-text">{{ current_network_info.tun0_ip_address }}</p>
+          <p class="small-text">Sim Card</p>
+      <p class="large-text">Airtel</p>
+          <div class="vertical-gap"></div>
+          <p class="small-text">4G Signal</p>
+      <p class="large-text">-90dbi</p>
+<div class="vertical-gap"></div>
+          <div class="vertical-gap"></div>
+          <p class="small-text">SETUP MODE: </p>
+<label class="switch">
+  <input type="checkbox">
+  <span class="slider round"></span>
+</label>
       {% else %}
       <p class="small-text">Network Info</p>
       <p class="large-text">Not connected to any WiFi network</p>
@@ -32,7 +42,7 @@
             {% endfor %}
           </select>
           <input type="password" name="wifi_key" , placeholder="Password" />
-          <button type="submit" ,>Connect</button>
+          <button type="submit"> Connect</button>
         </form>
       </div>
     </div>
