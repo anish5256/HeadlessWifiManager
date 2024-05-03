@@ -4,6 +4,7 @@ import subprocess
 import os
 import time
 
+from modems.interface import get_modem_status
 
 app = Flask(__name__)
 app.secret_key = "a813c29bcd06b9a18f3cfc372418e64cb85860a5ebc044a68d59dcbd367233b3"
@@ -109,6 +110,17 @@ def safely_remove_module(module_name, retry_attempts=3):
         print(f"Attempt {attempt + 1} failed to unload {module_name}. Retrying...")
     print(f"Failed to unload {module_name} after {retry_attempts} attempts.")
 
+
+
+@app.route('/modem_status', methods=['GET'])
+def modem_status():
+    try:
+        status = get_modem_status()
+        if status:
+            status["4gSignal"] = status.get("fields", {}).get("signalStrength", "Error")
+        return status
+    except Exception as e:
+        return {"error": e, "4gSignal": "Error"}
 
 @app.route('/api/setup-mode', methods=['GET'])
 def setup_mode():
