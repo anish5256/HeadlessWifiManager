@@ -24,7 +24,6 @@ def index():
     Index route to display the main page.
     It shows available Wi-Fi networks and current network information.
     """
-
     if not is_authenticated():
         return render_template('login.html')
     wifi_networks = wifi_manager.scan_wifi_networks()
@@ -64,11 +63,6 @@ def saved_networks():
     return render_template("saved_networks.html", saved_credentials=saved_credentials)
 
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=9090)
-
-
-
 @app.route('/login', methods=['POST'])
 def login():
     username = request.form.get('username')
@@ -79,6 +73,7 @@ def login():
         return redirect(url_for('success'))
     else:
         return render_template('login.html', error='Invalid username or password')
+
 
 @app.route('/success')
 def success():
@@ -138,3 +133,7 @@ def setup_mode():
             return f'Error executing command: {e}', 500
     else:
         return 'Invalid state', 400
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=9090)
