@@ -22,8 +22,13 @@
 <div class="vertical-gap"></div>
           <div class="vertical-gap"></div>
           <p class="small-text">SETUP MODE: </p>
+
 <label class="switch">
-  <input type="checkbox" id="setupModeCheckbox">
+    {% if is_setup_mode %}
+    <input type="checkbox" id="setupModeCheckbox" checked/>
+        {% else %}
+         <input type="checkbox" id="setupModeCheckbox">
+        {% endif %}
   <span class="slider round"></span>
 </label>
       {% else %}
@@ -31,6 +36,7 @@
       <p class="large-text">Not connected to any WiFi network</p>
       {% endif %}
 </div>
+
     <div class="right-column">
       <h2>Choose Wifi Network</h2>
       <div class="input-container">

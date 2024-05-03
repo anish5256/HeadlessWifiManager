@@ -14,6 +14,13 @@ USERNAME = 'admin'
 PASSWORD = 'password'
 
 
+def module_in_use_check(module_name):
+    # Check if the module is still loaded
+    cmd = f"lsmod | grep {module_name}"
+    result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, text=True)
+    return module_name in result.stdout
+
+
 def is_authenticated():
     return session.get('logged_in', False)
 
@@ -28,10 +35,12 @@ def index():
         return render_template('login.html')
     wifi_networks = wifi_manager.scan_wifi_networks()
     current_network_info = wifi_manager.get_current_network_info()
+    is_setup_mode = module_in_use_check("g_mass_storage")
     return render_template(
         "index.html",
         wifi_networks=wifi_networks,
         current_network_info=current_network_info,
+        is_setup_mode=is_setup_mode,
     )
 
 
@@ -87,13 +96,6 @@ def logout():
     return redirect(url_for('index'))
 
 
-def module_in_use_check(module_name):
-    # Check if the module is still loaded
-    cmd = f"lsmod | grep {module_name}"
-    result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, text=True)
-    return module_name in result.stdout
-
-
 def safely_remove_module(module_name, retry_attempts=3):
     for attempt in range(retry_attempts):
         if not module_in_use_check(module_name):
@@ -116,7 +118,7 @@ def setup_mode():
         try:
             safely_remove_module("g_ether")
             safely_remove_module("g_mass_storage")
-            subprocess.run(['sudo', 'modprobe' 'g_mass_storage', 'file=/flash.bin', 'stall=0', 'removable=1'], check=True)
+            subprocess.run(['sudo', 'modprobe', 'g_mass_storage', 'file=/flash.bin', 'stall=0', 'removable=1'], check=True)
             return 'Setup mode enabled', 200
         except subprocess.CalledProcessError as e:
             return f'Error executing command: {e}', 500
