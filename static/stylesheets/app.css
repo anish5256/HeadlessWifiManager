@@ -188,13 +188,7 @@ button:hover {
   background-color: var(--secondary-color);
 }
 
-.bottom-left-image {
-  position: absolute;
-  bottom: 20px;
-  left: 10px;
-  width: 90px;
-  height: auto;
-}
+
 /* The switch - the box around the slider */
 .switch {
   position: relative;
@@ -265,4 +259,45 @@ input:checked + .slider:before {
 /* Text for the "Mass Storage Off" state */
 .toggle-label::after {
     content: "Mass Storage Off";
+}
+
+
+
+@media (max-width: 767px) {
+  .subcontent {
+    width: 90%;
+    min-width: unset;
+    height: auto;
+    flex-direction: column;
+  }
+
+  .left-column,
+  .right-column {
+    margin-top: 20px;
+    width: 100%;
+  }
+
+  .input-container {
+    width: 90%;
+  }
+
+  select,
+  input {
+    font-size: 16px; /* Increase font size for better readability on mobile */
+  }
+
+  button {
+    font-size: 16px; /* Increase font size for better readability on mobile */
+  }
+
+  .save-credentials {
+    height: auto;
+    width: 90%;
+    min-height: unset;
+    min-width: unset;
+  }
+
+  .bottom-left-image {
+    display: none; /* Hide the image on small screens */
+  }
 }
