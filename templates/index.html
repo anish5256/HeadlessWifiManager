@@ -23,7 +23,7 @@
           <div class="vertical-gap"></div>
           <p class="small-text">SETUP MODE: </p>
 <label class="switch">
-  <input type="checkbox">
+  <input type="checkbox" id="setupModeCheckbox">
   <span class="slider round"></span>
 </label>
       {% else %}
@@ -49,4 +49,38 @@
   </div>
 </div>
 
+    <script>
+    // Get the checkbox element
+const setupModeCheckbox = document.getElementById('setupModeCheckbox');
+
+// Add an event listener to the checkbox
+setupModeCheckbox.addEventListener('change', (event) => {
+  // Check if the checkbox is checked or not
+  if (event.target.checked) {
+    // Checkbox is checked, make the API call for "on" state
+    makeApiCall('on');
+  } else {
+    // Checkbox is unchecked, make the API call for "off" state
+    makeApiCall('off');
+  }
+});
+
+// Function to make the API call
+function makeApiCall(state) {
+  // Construct the API endpoint URL
+  const apiUrl = `/api/setup-mode?state=${state}`;
+
+  // Make the API call using fetch or your preferred method
+  fetch(apiUrl)
+    .then(response => response.json())
+    .then(data => {
+      // Handle the API response as needed
+      console.log(data);
+    })
+    .catch(error => {
+      // Handle any errors that occurred during the API call
+      console.error(error);
+    });
+}
+    </script>
 {% endblock %}

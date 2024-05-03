@@ -1,9 +1,12 @@
 from flask import Flask, render_template, request, session, redirect, url_for
 from manager import WifiManagerAdapter
+import subprocess
+import os
+import time
+
 
 app = Flask(__name__)
 app.secret_key = "a813c29bcd06b9a18f3cfc372418e64cb85860a5ebc044a68d59dcbd367233b3"
-
 
 wifi_manager = WifiManagerAdapter().get_manager()
 
@@ -87,3 +90,51 @@ def success():
 def logout():
     session.pop('logged_in', None)
     return redirect(url_for('index'))
+
+
+def module_in_use_check(module_name):
+    # Check if the module is still loaded
+    cmd = f"lsmod | grep {module_name}"
+    result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, text=True)
+    return module_name in result.stdout
+
+
+def safely_remove_module(module_name, retry_attempts=3):
+    for attempt in range(retry_attempts):
+        if not module_in_use_check(module_name):
+            print(f"Module {module_name} is not currently loaded.")
+            return
+        os.system(f'sudo modprobe -r {module_name}')
+        time.sleep(1)  # wait a bit before retrying
+        if not module_in_use_check(module_name):
+            print(f"Module {module_name} unloaded successfully.")
+            return
+        print(f"Attempt {attempt + 1} failed to unload {module_name}. Retrying...")
+    print(f"Failed to unload {module_name} after {retry_attempts} attempts.")
+
+
+@app.route('/api/setup-mode', methods=['GET'])
+def setup_mode():
+    state = request.args.get('state')
+
+    if state == 'on':
+        try:
+            safely_remove_module("g_ether")
+            safely_remove_module("g_mass_storage")
+            subprocess.run(['sudo', 'modprobe' 'g_mass_storage', 'file=/flash.bin', 'stall=0', 'removable=1'], check=True)
+            return 'Setup mode enabled', 200
+        except subprocess.CalledProcessError as e:
+            return f'Error executing command: {e}', 500
+    elif state == 'off':
+        # Execute the command as sudo
+        try:
+            safely_remove_module("g_ether")
+            safely_remove_module("g_mass_storage")
+            subprocess.run(['sudo', 'modprobe', 'g_ether'],
+                           check=True)
+            print(print("Hello Disabled"))
+            return 'Setup mode disabled', 200
+        except subprocess.CalledProcessError as e:
+            return f'Error executing command: {e}', 500
+    else:
+        return 'Invalid state', 400
