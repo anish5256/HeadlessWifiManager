@@ -7,10 +7,8 @@
       Connected" %}
       <p class="small-text">Connected To</p>
       <p class="large-text">{{ current_network_info.ssid }}</p>
-      <div class="vertical-gap"></div>
       <p class="small-text">Signal Strength</p>
       <p class="large-text">{{ current_network_info.signal_strength }}</p>
-      <div class="vertical-gap"></div>
       <p class="small-text">Serial No</p>
       <p class="large-text">{{ current_network_info.serial_number }}</p>
       <div class="vertical-gap"></div>
@@ -20,7 +18,15 @@
           <p class="small-text">4G Signal</p>
       <p class="large-text" id="4g-signal">ERROR</p>
 <div class="vertical-gap"></div>
+                    <p class="small-text">INTERNET</p>
+      <p class="large-text" id="internet">UNKNOWN</p>
+<div class="vertical-gap"></div>
+                              <p class="small-text">IMEI</p>
+      <p class="large-text" id="imei">UNKNOWN</p>
           <div class="vertical-gap"></div>
+                              <p class="small-text">iccId</p>
+      <p class="large-text" id="iccId">UNKNOWN</p>
+<div class="vertical-gap"></div>
           <p class="small-text">SETUP MODE: </p>
 
 <label class="switch">
@@ -89,27 +95,48 @@ function makeApiCall(state) {
 }
 
 function fetchData() {
-  fetch('/modem_status')
-    .then(response => response.json())
-    .then(data => {
-      // Assuming you have an element in your HTML to display the 4G signal strength
-        console.log(data);
-      const signalElement = document.getElementById('4g-signal');
-      const simCard = document.getElementById('sim-card');
-      if (signalElement) {
-        signalElement.textContent = data['4gSignal'];
-      }
-      if(simCard){
-          simCard.textContent = data["sim_card"];
-      }
-    })
-    .catch(error => {
-      console.error('Error fetching data:', error);
-    });
+    const controller = new AbortController(); // Create a new AbortController instance
+    const timeoutId = setTimeout(() => controller.abort(), 2000); // Set a 2-second timeout
+
+    fetch('/modem_status', { signal: controller.signal })
+        .then(response => {
+            clearTimeout(timeoutId); // Clear the timeout on successful response
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log(data);
+            const signalElement = document.getElementById('4g-signal');
+            const simCard = document.getElementById('sim-card');
+            const internet = document.getElementById('internet');
+            const imei = document.getElementById('imei');
+            const iccId = document.getElementById('iccId');
+            if (signalElement) {
+                signalElement.textContent = data['4gSignal'];
+            }
+            if (simCard) {
+                simCard.textContent = data["sim_card"];
+            }
+            if (internet) {
+                internet.textContent = data["internet"];
+            }
+            if (imei) {
+                imei.textContent = data["imei"];
+            }
+            if (iccId) {
+                iccId.textContent = data["iccId"];
+            }
+        })
+        .catch(error => {
+            clearTimeout(timeoutId); // Clear the timeout on error
+            console.error('Error fetching data:', error);
+        });
 }
 
     fetchData();
-    setInterval(fetchData, 2000);
+    setInterval(fetchData, 3000);
 
     </script>
 {% endblock %}

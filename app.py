@@ -1,15 +1,21 @@
-from flask import Flask, render_template, request, session, redirect, url_for
+from flask import Flask, render_template, request, session, redirect, url_for, make_response
 from manager import WifiManagerAdapter
 import subprocess
 import os
 import time
+import hashlib
 
-from modems.interface import get_modem_status
+from modems.hnhf90 import HnhF90
+from modems.interface import ModemDataFetcher
 
 app = Flask(__name__)
 app.secret_key = "a813c29bcd06b9a18f3cfc372418e64cb85860a5ebc044a68d59dcbd367233b3"
 
 wifi_manager = WifiManagerAdapter().get_manager()
+
+
+MODEM_OBJECT = ModemDataFetcher(HnhF90())
+
 
 USERNAME = 'admin'
 PASSWORD = 'password'
@@ -22,8 +28,17 @@ def module_in_use_check(module_name):
     return module_name in result.stdout
 
 
-def is_authenticated():
-    return session.get('logged_in', False)
+def generate_auth_token(username):
+    # Simple token generation based on username, secret key, and a hash function
+    token = hashlib.sha256((username + app.secret_key).encode()).hexdigest()
+    return token
+
+
+def is_authenticated(request):
+    auth_token = request.cookies.get('auth_token')
+    if auth_token == generate_auth_token(USERNAME):
+        return True
+    return False
 
 
 @app.route("/")
@@ -32,7 +47,7 @@ def index():
     Index route to display the main page.
     It shows available Wi-Fi networks and current network information.
     """
-    if not is_authenticated():
+    if not is_authenticated(request):
         return render_template('login.html')
     wifi_networks = wifi_manager.scan_wifi_networks()
     current_network_info = wifi_manager.get_current_network_info()
@@ -79,22 +94,19 @@ def login():
     password = request.form.get('password')
 
     if username == USERNAME and password == PASSWORD:
-        session['logged_in'] = True
-        return redirect(url_for('success'))
+        token = generate_auth_token(username)
+        response = make_response(redirect(url_for('index')))
+        response.set_cookie('auth_token', token, httponly=True, secure=True)
+        return response
     else:
         return render_template('login.html', error='Invalid username or password')
 
 
-@app.route('/success')
-def success():
-    if not is_authenticated():
-        return redirect(url_for('index'))
-    return redirect(url_for('index'))
-
 @app.route('/logout')
 def logout():
-    session.pop('logged_in', None)
-    return redirect(url_for('index'))
+    response = make_response(redirect(url_for('index')))
+    response.delete_cookie('auth_token')
+    return response
 
 
 def safely_remove_module(module_name, retry_attempts=3):
@@ -111,16 +123,14 @@ def safely_remove_module(module_name, retry_attempts=3):
     print(f"Failed to unload {module_name} after {retry_attempts} attempts.")
 
 
-
 @app.route('/modem_status', methods=['GET'])
 def modem_status():
     try:
-        status = get_modem_status()
-        if status:
-            status["4gSignal"] = status.get("fields", {}).get("signalStrength", "Error")
+        status = MODEM_OBJECT.get_data()
         return status
     except Exception as e:
         return {"error": e, "4gSignal": "Error"}
+
 
 @app.route('/api/setup-mode', methods=['GET'])
 def setup_mode():
@@ -150,4 +160,4 @@ def setup_mode():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=9090)
+    app.run(host="0.0.0.0", port=9090, debug=True)

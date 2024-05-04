@@ -47,8 +47,8 @@ html {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  height: 80%;
-  width: 50%;
+  height: 95%;
+  width: 60%;
   min-width: 500px;
   display: flex;
   box-shadow: 0 0 var(--box-shadow) 0 var(--light-border-color);
