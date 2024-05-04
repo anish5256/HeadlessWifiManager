@@ -1,9 +1,8 @@
-from flask import Flask, render_template, request, session, redirect, url_for, make_response
+from flask import Flask, render_template, request, session, redirect, url_for
 from manager import WifiManagerAdapter
 import subprocess
 import os
 import time
-import hashlib
 
 from modems.hnhf90 import HnhF90
 from modems.interface import ModemDataFetcher
@@ -28,17 +27,8 @@ def module_in_use_check(module_name):
     return module_name in result.stdout
 
 
-def generate_auth_token(username):
-    # Simple token generation based on username, secret key, and a hash function
-    token = hashlib.sha256((username + app.secret_key).encode()).hexdigest()
-    return token
-
-
-def is_authenticated(request):
-    auth_token = request.cookies.get('auth_token')
-    if auth_token == generate_auth_token(USERNAME):
-        return True
-    return False
+def is_authenticated():
+    return session.get('logged_in', False)
 
 
 @app.route("/")
@@ -47,7 +37,7 @@ def index():
     Index route to display the main page.
     It shows available Wi-Fi networks and current network information.
     """
-    if not is_authenticated(request):
+    if not is_authenticated():
         return render_template('login.html')
     wifi_networks = wifi_manager.scan_wifi_networks()
     current_network_info = wifi_manager.get_current_network_info()
@@ -94,19 +84,22 @@ def login():
     password = request.form.get('password')
 
     if username == USERNAME and password == PASSWORD:
-        token = generate_auth_token(username)
-        response = make_response(redirect(url_for('index')))
-        response.set_cookie('auth_token', token, httponly=True, secure=True)
-        return response
+        session['logged_in'] = True
+        return redirect(url_for('success'))
     else:
         return render_template('login.html', error='Invalid username or password')
 
 
+@app.route('/success')
+def success():
+    if not is_authenticated():
+        return redirect(url_for('index'))
+    return redirect(url_for('index'))
+
 @app.route('/logout')
 def logout():
-    response = make_response(redirect(url_for('index')))
-    response.delete_cookie('auth_token')
-    return response
+    session.pop('logged_in', None)
+    return redirect(url_for('index'))
 
 
 def safely_remove_module(module_name, retry_attempts=3):
@@ -160,4 +153,4 @@ def setup_mode():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=9090, debug=True)
+    app.run(host="0.0.0.0", port=9090)
