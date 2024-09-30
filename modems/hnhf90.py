@@ -1,13 +1,13 @@
 import requests
 from factory.modem_base import ModemBase
 from typing import Dict, Any
-
+import os
 
 class HnhF90(ModemBase):
     MODEM_MODEL = "F90"
     BRAND = "H&H"
 
-    def __init__(self, ip_address: str = "192.168.8.1", username: str = "", password: str = "admin"):
+    def __init__(self, ip_address: str = "192.168.100.1", username: str = "", password: str = "admin"):
         self.base_url = f"http://{ip_address}"
         self.username = username
         self.password = password
@@ -15,6 +15,8 @@ class HnhF90(ModemBase):
         self.modem_status = None
         self.sim_data = None
         self.timeout = 2
+        if os.getenv("MODEM_PASSWORD"):
+            self.password = os.getenv("MODEM_PASSWORD")
 
     def _login(self) -> bool:
         url = f"{self.base_url}/api/json"

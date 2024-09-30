@@ -26,3 +26,7 @@ class ModemBase(ABC):
     @abstractmethod
     def get_iccId(self):
         pass
+
+    @abstractmethod
+    def restart(self):
+        pass
