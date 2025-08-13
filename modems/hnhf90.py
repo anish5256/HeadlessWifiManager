@@ -180,6 +180,23 @@ class HnhF90(ModemBase):
         self.modem_status = self._get_modem_status()
         self.sim_data = self._get_sim_data()
 
+    def restart(self) -> bool:
+        if not self._ensure_login():
+            return False
+        
+        url = f"{self.base_url}/api/json"
+        payload = {
+            "fid": "restart",
+            "sessionId": self.session_id
+        }
+        headers = self._get_headers(url)
+        
+        try:
+            response = requests.request("POST", url, headers=headers, json=payload, timeout=self.timeout)
+            return response.status_code == 200
+        except requests.RequestException:
+            return False
+
 
 # Example usage:
 if __name__ == "__main__":
